@@ -35,12 +35,13 @@ public class ReadData {
         Class.forName(DRIVER_NAME);
         File zippedDBFile = new File("db/WIOMdb.SQLite.zip");
         String fileName = zippedDBFile.getName().substring(0, zippedDBFile.getName().lastIndexOf("."));
-//        File dbFile = new File("db/WIOMdb.SQLite");
         File dbFile = File.createTempFile(fileName, "");
-        System.out.println("Temp file: " + dbFile.getAbsolutePath());
+//        System.out.printf("%.2f secs to create Temp file: %s%n", 0.001 * (System.currentTimeMillis() - start), dbFile.getAbsolutePath());
         dbFile.deleteOnExit();
-//        dbFile = new File("WIOMdb.SQLite");
+        long start = System.currentTimeMillis();
         unzip(zippedDBFile, dbFile);
+        System.out.printf("%.2f sec to unzip file (%,dmb -> %,dmb)%n", 0.001 * (System.currentTimeMillis() - start),
+                zippedDBFile.length() / (1024 * 1024), dbFile.length() / (1024 * 1024));
         if (!dbFile.exists()) {
             LOGGER.log(Level.SEVERE, "File not found: {0}", dbFile.getAbsolutePath());
             return;
@@ -69,14 +70,28 @@ public class ReadData {
             }
             tablesRS.close();
 
-            ResultSet rs = statement.executeQuery("SELECT MATNR,KWMENG FROM recurring_demand");
-            int count = 0;
-            while (rs.next() && count < 100) {
-                System.out.printf("%s %s%n", rs.getString("MATNR"), rs.getString("KWMENG"));
-                count++;
+            ResultSet rs = statement.executeQuery("SELECT * FROM master_data");
+            ResultSetMetaData rsmd = rs.getMetaData();
+            for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                System.out.printf("\t%s", rsmd.getColumnName(column));
             }
-            rs.close();
+            System.out.println();
+            int count = 0;
+            while (rs.next() && count < 20) {
+                count += 1;
+                for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                    System.out.printf("\t%s", rs.getObject(column));
+                }
+                System.out.println();
+            }
 
+//            ResultSet rs = statement.executeQuery("SELECT MATNR,KWMENG FROM recurring_demand");
+//            int count = 0;
+//            while (rs.next() && count < 100) {
+//                System.out.printf("%s %s%n", rs.getString("MATNR"), rs.getString("KWMENG"));
+//                count++;
+//            }
+            rs.close();
             statement.close();
             connection.close();
         } catch (SQLException ex) {
@@ -105,9 +120,9 @@ public class ReadData {
             zipInputStream.closeEntry();
             zipInputStream.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ReadData.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(ReadData.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
     }
 
