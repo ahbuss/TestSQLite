@@ -62,7 +62,7 @@ public class ReadData {
                     }
                     System.out.println();
                     for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
-                        System.out.printf("\t%s", rsmd.getColumnClassName(column));
+                        System.out.printf("\t%s", rsmd.getColumnTypeName(column));
                     }
                     System.out.println();
                     rs.close();

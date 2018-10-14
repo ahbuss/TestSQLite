@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
@@ -41,6 +42,17 @@ public class CreateDB {
             }
 
             ResultSet resultSet = statement.executeQuery(selectQuery);
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                System.out.printf("\t%s", rsmd.getColumnName(column));
+            }
+            System.out.println();
+            
+            for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                System.out.printf("\t%s", rsmd.getColumnTypeName(column));
+            }
+            System.out.println();
+            
             while (resultSet.next()) {
                 System.out.printf("%d: %s%n", resultSet.getInt("id"),
                         resultSet.getString("message"));
