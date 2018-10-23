@@ -13,14 +13,18 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import simkit.Schedule;
+import simkit.examples.ArrivalProcess;
 import simkit.random.RandomVariate;
 import simkit.random.RandomVariateFactory;
 
@@ -90,8 +94,22 @@ public class ReadArrivalTimes {
                 interarrivaltimes[count++] = x;
             }
             
+//            for (int i = 0; i < frequencies.length; ++i) {
+//                frequencies[i] *= 1 + i;
+//            }
+            
             RandomVariate rv = RandomVariateFactory.getInstance("DiscreteInteger", interarrivaltimes, frequencies);
             System.out.println(rv);
+            
+            ArrivalProcess arrivalProcess = new ArrivalProcess(rv);
+            
+            Schedule.stopAtTime(50 * 365);
+            Schedule.reset();
+            Schedule.startSimulation();
+            
+            System.out.printf("At time %,.2f there have been %,d Demands of NIIN %s%n",
+                    Schedule.getSimTime(), arrivalProcess.getNumberArrivals(),
+                    "000030392");
             
         } catch (SQLException | ParseException ex) {
             Logger.getLogger(ReadArrivalTimes.class.getName()).log(Level.SEVERE, null, ex);
