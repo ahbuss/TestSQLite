@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -20,6 +21,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import simkit.random.RandomVariate;
+import simkit.random.RandomVariateFactory;
 
 /**
  *
@@ -67,17 +70,28 @@ public class ReadArrivalTimes {
             rs.close();
             statement.close();
             connection.close();
-            System.out.printf("%s had %,d arrivals:%n", "000014076", arrivals.size());
+            System.out.printf("%s had %,d arrivals:%n", "000030392", arrivals.size());
 //            for (Date date: arrivals) {
 //                System.out.println(date);
 //            }
+            SortedSet<Integer> sorted = new TreeSet<>();
             Date[] asArray = arrivals.toArray(new Date[0]);
             for (int i = 1; i < asArray.length; ++i) {
                 long diff = asArray[i].getTime() - asArray[i - 1].getTime();
                 long days = diff / (1000 * 60 * 60 * 24);
-                System.out.println(days);
+//                System.out.println(days);
+                sorted.add((int)days);
+            }
+            int[] interarrivaltimes = new int[sorted.size()];
+            double[] frequencies = new double[interarrivaltimes.length];
+            Arrays.fill(frequencies, 1);
+            int count = 0;
+            for (int x: sorted) {
+                interarrivaltimes[count++] = x;
             }
             
+            RandomVariate rv = RandomVariateFactory.getInstance("DiscreteInteger", interarrivaltimes, frequencies);
+            System.out.println(rv);
             
         } catch (SQLException | ParseException ex) {
             Logger.getLogger(ReadArrivalTimes.class.getName()).log(Level.SEVERE, null, ex);

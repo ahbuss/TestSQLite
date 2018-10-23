@@ -77,7 +77,7 @@ public class ReadData {
             }
             System.out.println();
             int count = 0;
-            while (rs.next() && count < 20) {
+            while (rs.next() && count < 200) {
                 count += 1;
                 for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
                     System.out.printf("\t%s", rs.getObject(column));
