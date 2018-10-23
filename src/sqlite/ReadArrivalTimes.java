@@ -6,12 +6,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -21,9 +25,9 @@ import java.util.zip.ZipInputStream;
  *
  * @author ahbuss
  */
-public class ReadData {
+public class ReadArrivalTimes {
 
-    private static final Logger LOGGER = Logger.getLogger(ReadData.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ReadArrivalTimes.class.getName());
 
     public static final String DRIVER_NAME = "org.sqlite.JDBC";
     public static final String URL_PREFIX = "jdbc:sqlite:";
@@ -49,53 +53,34 @@ public class ReadData {
         try {
             Connection connection = DriverManager.getConnection(URL_PREFIX + dbFile.getAbsolutePath());
             Statement statement = connection.createStatement();
-            DatabaseMetaData dbmd = connection.getMetaData();
-            ResultSet tablesRS = dbmd.getTables(null, null, null, null);
-            while (tablesRS.next()) {
-                if ("TABLE".equals(tablesRS.getString("TABLE_TYPE"))) {
-                    String tableName = tablesRS.getString("TABLE_NAME");
-                    System.out.printf("Table: %s%n", tableName);
-                    ResultSet rs = statement.executeQuery("SELECT * FROM " + tableName);
-                    ResultSetMetaData rsmd = rs.getMetaData();
-                    for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
-                        System.out.printf("\t%s", rsmd.getColumnName(column));
-                    }
-                    System.out.println();
-                    for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
-                        System.out.printf("\t%s", rsmd.getColumnTypeName(column));
-                    }
-                    System.out.println();
-                    rs.close();
-                }
-            }
-            tablesRS.close();
+       
 
-            ResultSet rs = statement.executeQuery("SELECT * FROM recurring_demand");
-            ResultSetMetaData rsmd = rs.getMetaData();
-            for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
-                System.out.printf("\t%s", rsmd.getColumnName(column));
-            }
-            System.out.println();
-            int count = 0;
-            while (rs.next() && count < 20) {
-                count += 1;
-                for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
-                    System.out.printf("\t%s", rs.getObject(column));
-                }
-                System.out.println();
-            }
+            ResultSet rs = statement.executeQuery("SELECT MATNR, AUDAT FROM recurring_demand WHERE MATNR='000014076'");
             
-//            ResultSet rs = statement.executeQuery("SELECT MATNR,KWMENG FROM recurring_demand");
-//            int count = 0;
-//            while (rs.next() && count < 100) {
-//                System.out.printf("%s %s%n", rs.getString("MATNR"), rs.getString("KWMENG"));
-//                count++;
-//            }
+            SortedSet<Date> arrivals = new TreeSet<>();
+            DateFormat format = new SimpleDateFormat("yyyyMMdd");
+            while (rs.next()) {
+//                System.out.printf("%s %s%n", rs.getString("MATNR"), rs.getString("AUDAT"));
+                Date date = format.parse(rs.getString("AUDAT"));
+                arrivals.add(date);
+            }
             rs.close();
             statement.close();
             connection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(ReadData.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.printf("%s had %,d arrivals:%n", "000014076", arrivals.size());
+//            for (Date date: arrivals) {
+//                System.out.println(date);
+//            }
+            Date[] asArray = arrivals.toArray(new Date[0]);
+            for (int i = 1; i < asArray.length; ++i) {
+                long diff = asArray[i].getTime() - asArray[i - 1].getTime();
+                long days = diff / (1000 * 60 * 60 * 24);
+                System.out.println(days);
+            }
+            
+            
+        } catch (SQLException | ParseException ex) {
+            Logger.getLogger(ReadArrivalTimes.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
