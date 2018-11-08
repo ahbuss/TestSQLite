@@ -77,7 +77,6 @@ public class ReadData {
             }
             tablesRS.close();
 
-            
             for (String tableName : tableNames) {
 
                 ResultSet rs = statement.executeQuery("SELECT * FROM " + tableName);
@@ -101,12 +100,16 @@ public class ReadData {
                 }
                 rs.close();
             }
-//            ResultSet rs = statement.executeQuery("SELECT MATNR,KWMENG FROM recurring_demand");
-//            int count = 0;
-//            while (rs.next() && count < 100) {
-//                System.out.printf("%s %s%n", rs.getString("MATNR"), rs.getString("KWMENG"));
-//                count++;
-//            }
+            ResultSet rs = statement.executeQuery("select RTAT_OBS.RTAT from RTAT_OBS "
+                    + "inner join master_data on rtat_obs.key = master_data.key "
+                    + "where master_data.MATNR = '000014321' ");
+            System.out.println("Result of: select RTAT_OBS.RTAT from RTAT_OBS "
+                    + "inner join master_data on rtat_obs.key = master_data.key "
+                    + "where master_data.MATNR = '000014321' ");
+            while (rs.next()) {
+                System.out.println(rs.getObject(1));
+            }
+            rs.close();
             statement.close();
             connection.close();
         } catch (SQLException ex) {
