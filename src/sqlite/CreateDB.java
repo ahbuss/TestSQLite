@@ -30,8 +30,9 @@ public class CreateDB {
             dbFile.delete();
         }
         String dbURL = URL_PREFIX + dbFile.getAbsolutePath();
-        String createQuery = "CREATE TABLE Test (id INTEGER, message VARCHAR(255))";
-        String insertQuery = "INSERT INTO Test VALUES( %d, 'Hello %d from SQLite!')";
+        String createQuery = "CREATE TABLE Test (id INTEGER, message VARCHAR(255), date TEXT)";
+        String insertQuery = "INSERT INTO Test VALUES( %d, 'Hello %d from SQLite!', "
+                + "'2018-11-07')";
         String selectQuery = "SELECT * FROM Test";
         try {
             Connection connection = DriverManager.getConnection(dbURL);
@@ -54,8 +55,8 @@ public class CreateDB {
             System.out.println();
             
             while (resultSet.next()) {
-                System.out.printf("%d: %s%n", resultSet.getInt("id"),
-                        resultSet.getString("message"));
+                System.out.printf("%d: %s: %s%n", resultSet.getInt("id"),
+                        resultSet.getString("message"), resultSet.getDate("date"));
             }
             resultSet.close();
             statement.close();
