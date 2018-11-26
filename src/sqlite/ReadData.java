@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import static java.lang.Integer.min;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -108,6 +110,31 @@ public class ReadData {
                     + "where master_data.MATNR = '000014321' ");
             while (rs.next()) {
                 System.out.println(rs.getObject(1));
+            }
+
+            if (tableNames.contains("due_in")) {
+                System.out.println("Due-ins Ordered by Key");
+                rs = statement.executeQuery("SELECT * FROM due_in ORDER BY Key, DUEDATE");
+                ResultSetMetaData rsmd = rs.getMetaData();
+                for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                    System.out.print("\t" + rsmd.getColumnName(column));
+                }
+                System.out.println();
+                int count = 0;
+                while (rs.next()) {
+                    count += 1;
+                    for (int column = 1; column <= rsmd.getColumnCount(); ++column) {
+                        if (rsmd.getColumnName(column).equalsIgnoreCase("DUEDATE") || 
+                                rsmd.getColumnName(column).equalsIgnoreCase("DATE")) {
+                            System.out.print("\t" + LocalDate.ofEpochDay(rs.getLong(column)));
+                        } else {
+                            System.out.print("\t" + rs.getObject(column));
+                        }
+                    }
+                    System.out.println();
+                }
+                System.out.printf("%,d due-ins%n", count);
+
             }
             rs.close();
             statement.close();
