@@ -22,7 +22,9 @@ public class TestROPRead {
             + "Sim_ID              TEXT,"
             + "PMSS                Real,"
             + "ROP                 Real,"
-            + "Order_Up_To         Real)";
+            + "Order_Up_To         Real,"
+            + "CONSTRAINT not_null CHECK (PMSS IS NOT NULL OR "
+            + "(ROP IS NOT NULL AND Order_Up_To IS NOT NULL)))";
 
     private static final String DRIVER_NAME = "org.sqlite.JDBC";
 
