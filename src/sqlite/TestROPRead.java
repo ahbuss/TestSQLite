@@ -69,14 +69,20 @@ public class TestROPRead {
             ps.execute();
         }
         ps.close();
+        
+        statement.executeUpdate("INSERT INTO CIP VALUES (30, '10', '20', NULL, 2, 8)");
+        statement.executeUpdate("INSERT INTO CIP VALUES (31, '10', '20', 1000, NULL, NULL)");
+        statement.executeUpdate("INSERT INTO CIP VALUES (32, '10', '20', 2000, 200, 300)");
 
         ResultSet rs = statement.executeQuery("SELECT * FROM CIP");
 
         while (rs.next()) {
-            if (rs.getObject("PMSS") != null) {
+            if (rs.getObject("PMSS") != null && rs.getObject("ROP") == null && rs.getObject("Order_Up_To") == null) {
                 System.out.printf("%s: Using PMSS: %,.1f%n", rs.getString("CIP_ID"), rs.getDouble("PMSS"));
-            } else if (rs.getObject("ROP") != null && rs.getObject("Order_Up_To") != null) {
+            } else if (rs.getObject("PMSS") == null && rs.getObject("ROP") != null && rs.getObject("Order_Up_To") != null) {
                 System.out.printf("%s: Using ROP/Order_Up_To: (%,.1f,%,.1f)%n", rs.getString("CIP_ID"), rs.getDouble("ROP"), rs.getDouble("Order_Up_To"));
+            } else {
+                System.err.println("PMSS must be non-null or ROP and Order_Up_To must be non-null, not both");
             }
         }
 
